@@ -1,44 +1,55 @@
 #!/usr/bin/python3
-""" N queens """
+""" N queens problem
+"""
 import sys
 
-
-if len(sys.argv) > 2 or len(sys.argv) < 2:
+if len(sys.argv) != 2:
     print("Usage: nqueens N")
     exit(1)
 
-if not sys.argv[1].isdigit():
+try:
+    number_q = int(sys.argv[1])
+except ValueError:
     print("N must be a number")
     exit(1)
 
-if int(sys.argv[1]) < 4:
+if number_q < 4:
     print("N must be at least 4")
     exit(1)
 
-n = int(sys.argv[1])
+
+def solve_nqueens(number):
+    """ solve n queens problem
+    """
+    if number == 0:
+        return [[]]
+    inner_solution = solve_nqueens(number - 1)
+    return [solution + [(number, i + 1)]
+            for i in range(number_q)
+            for solution in inner_solution
+            if safe_queen((number, i + 1), solution)]
 
 
-def queens(n, i=0, a=[], b=[], c=[]):
-    """ find possible positions """
-    if i < n:
-        for j in range(n):
-            if j not in a and i + j not in b and i - j not in c:
-                yield from queens(n, i + 1, a + [j], b + [i + j], c + [i - j])
-    else:
-        yield a
+def attack_queen(square, queen):
+    """ check if queen is attacking another gouine
+    """
+    (first_row, first_col) = square
+    (second_row, second_col) = queen
+    return (first_row == second_row) or (first_col == second_col) or\
+        abs(first_row - second_row) == abs(first_col - second_col)
 
 
-def solve(n):
-    """ solve """
-    k = []
-    i = 0
-    for solution in queens(n, 0):
-        for s in solution:
-            k.append([i, s])
-            i += 1
-        print(k)
-        k = []
-        i = 0
+def safe_queen(square, queens):
+    """ check if queen is safe
+    """
+    for queen in queens:
+        if attack_queen(square, queen):
+            return False
+    return True
 
 
-solve(n)
+for answer in reversed(solve_nqueens(number_q)):
+    result = []
+    for answer_list in [list(answer_list) for answer_list in answer]:
+        result.append([i - 1 for i in answer_list])
+    print(result)
